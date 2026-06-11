@@ -121,7 +121,7 @@ apt-get -y install software-properties-common
 add-apt-repository -y ppa:icpc-latam/maratona-linux
 apt-get -y update
 apt-get -y upgrade
-apt-get -y install maratona-linguagens --no-install-recommends --allow-unauthenticated
+apt-get -y install maratona-linguagens file --no-install-recommends --allow-unauthenticated
 apt-get -y clean
 
 # OpenJDK 17 installation with chroot does not work as expected

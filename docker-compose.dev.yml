@@ -21,31 +21,42 @@
 
 services:
 
-    boca-base:
-        image: boca-base:latest
-        build: 
-            context: .
-            dockerfile: docker/dev/base/Dockerfile
-
     boca-web:
         image: boca-web:latest
         build: 
             context: .
-            dockerfile: docker/dev/web/Dockerfile
-        # CAUTION: this bind mount will overwrite BOCA website.
-        # For future development...
-        # volumes:
-        #     - ./src:/var/www/boca/src
+            dockerfile: docker/dev/Dockerfile
+            target: web
+        environment:
+            - BOCA_DB_SUPER_PASSWORD=superpass
+        depends_on:
+            boca-db:
+                condition: service_healthy
 
     boca-jail:
         image: boca-jail:latest
         build: 
             context: .
-            dockerfile: docker/dev/jail/Dockerfile
+            dockerfile: docker/dev/Dockerfile
+            target: jail
+        privileged: true
+        environment:
+            - BOCA_DB_SUPER_PASSWORD=superpass
+        depends_on:
+            boca-db:
+                condition: service_healthy
 
-    # boca-db:
-    #     volumes: 
-    #         - db-data:/var/lib/postgresql/data
+    boca-db:
+        image: postgres:14-alpine
+        environment:
+            - POSTGRES_PASSWORD=superpass
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        volumes: 
+            - db-data:/var/lib/postgresql/data
 
     boca-adminer:
         image: adminer:latest
@@ -54,6 +65,5 @@ services:
         ports:
             - 8080:8080
 
-# volumes:
-#
-#     db-data:
+volumes:
+    db-data:

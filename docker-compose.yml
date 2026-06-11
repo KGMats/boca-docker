@@ -23,21 +23,45 @@ services:
 
     # web app
     boca-web:
+        image: boca-web:latest
+        build:
+            context: .
+            dockerfile: docker/dev/Dockerfile
+            target: web
         environment:
-            # database configuration
-            # privileged user password
             - BOCA_DB_SUPER_PASSWORD=superpass
         ports: 
             - 8000:80
+        depends_on:
+            boca-db:
+                condition: service_healthy
 
     # online judge
     boca-jail:
+        image: boca-jail:latest
+        build:
+            context: .
+            dockerfile: docker/dev/Dockerfile
+            target: jail
         privileged: true
+        environment:
+            - BOCA_DB_SUPER_PASSWORD=superpass
+        depends_on:
+            boca-db:
+                condition: service_healthy
         
     # database
     boca-db:
         image: postgres:14-alpine
         environment:
-            # database configuration
-            # privileged user password
             - POSTGRES_PASSWORD=superpass
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        volumes:
+            - db-data:/var/lib/postgresql/data
+
+volumes:
+    db-data:

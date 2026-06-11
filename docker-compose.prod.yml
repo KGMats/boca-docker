@@ -24,7 +24,8 @@ services:
     boca-web:
         image: ghcr.io/joaofazolo/boca-docker/boca-web:latest
         depends_on:
-            - boca-db
+            boca-db:
+                condition: service_healthy
         deploy:
             mode: global
             placement:
@@ -43,8 +44,10 @@ services:
     # online judge
     boca-jail:
         image: ghcr.io/joaofazolo/boca-docker/boca-jail:latest
+        privileged: true
         depends_on:
-            - boca-db
+            boca-db:
+                condition: service_healthy
         deploy:
             mode: replicated
             replicas: 1
@@ -62,6 +65,14 @@ services:
 
     # database
     boca-db:
+        image: postgres:14-alpine
+        environment:
+            - POSTGRES_PASSWORD=superpass
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
         deploy:
             mode: global
             placement:

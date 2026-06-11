@@ -76,6 +76,11 @@ done
 
 >&2 echo "PostgreSQL server is up - executing command"
 
+if [ ! -d /home/bocajail/bin ]; then
+    echo "Creating BOCA jail environment..."
+    boca-createjail
+fi
+
 # Use exec format to run program directly as pid 1
 # https://www.padok.fr/en/blog/docker-processes-container
 exec boca-autojudge
