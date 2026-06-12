@@ -28,13 +28,13 @@ ARG BASE_IMAGE=ubuntu:jammy
 # hadolint ignore=DL3006
 FROM --platform=${BUILDPLATFORM:-linux/amd64} ${BASE_IMAGE} AS bocarepo
 # Git URL of the BOCA repository to clone from (default: cassiopc/boca)
-ARG REPOSITORY=https://github.com/cassiopc/boca.git
+ARG REPOSITORY=https://github.com/KGMats/boca.git
 # The branch, tag or SHA to point to in the cloned BOCA repository
 ARG REF=master
 
 # hadolint ignore=DL3008,DL3015
 RUN apt-get -y update \
-    && apt-get -y install --no-install-recommends git ca-certificates \
+    && apt-get -y install git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /
 RUN git clone "${REPOSITORY}"
@@ -204,6 +204,7 @@ RUN apt-get -y update \
         file \
         lsb-release \
         schroot \
+        default-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
 # https://bugs.launchpad.net/ubuntu/+source/ca-certificates-java/+bug/2019908
@@ -243,6 +244,11 @@ RUN wget --progress=dot:giga https://download.java.net/java/GA/jdk17.0.2/dfd4a8d
     && rm -rf jdk-17* openjdk-17*
 
 COPY --chmod=755 docker/dev/jail/init.sh /
+
+# Add HEALTHCHECK instruction to the container image
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
     CMD ps ax | grep -v grep | grep php | grep autojudging.php > /dev/null || exit 1
+
+# Use exec format to run program directly as pid 1
+# https://www.padok.fr/en/blog/docker-processes-container
 ENTRYPOINT ["/init.sh"]
