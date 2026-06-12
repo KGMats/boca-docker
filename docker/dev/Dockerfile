@@ -173,7 +173,10 @@ RUN \
     && a2enmod ssl socache_shmcb proxy_fcgi setenvif \
     && mkdir -p $APACHE_DIR/sites-enabled \
     && cp tools/000-boca.conf $APACHE_DIR/sites-enabled/000-boca.conf \
-    && apache2ctl configtest
+    && apache2ctl configtest \
+    && touch /etc/php/8.1/apache2/conf.d/99-boca-limits.ini \
+    && touch /etc/php/8.1/cli/conf.d/99-boca-limits.ini \
+    && chown "$APACHE_RUN_USER:$APACHE_RUN_GROUP" /etc/php/8.1/apache2/conf.d/99-boca-limits.ini /etc/php/8.1/cli/conf.d/99-boca-limits.ini
 
 COPY --chmod=755 --chown="$APACHE_RUN_USER:$APACHE_RUN_GROUP" docker/dev/web/init.sh /
 

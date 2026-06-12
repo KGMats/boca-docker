@@ -30,6 +30,9 @@ services:
             target: web
         environment:
             - BOCA_DB_SUPER_PASSWORD=superpass
+            - PHP_UPLOAD_MAX_FILESIZE=100M
+            - PHP_POST_MAX_SIZE=100M
+            - PHP_MEMORY_LIMIT=512M
         ports: 
             - 8000:80
         depends_on:

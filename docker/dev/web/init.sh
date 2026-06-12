@@ -63,6 +63,20 @@ docker_setup_env() {
 
 docker_setup_env
 
+# Configure PHP upload limits (writing to files owned by www-data)
+PHP_UPLOAD_MAX_FILESIZE="${PHP_UPLOAD_MAX_FILESIZE:-100M}"
+PHP_POST_MAX_SIZE="${PHP_POST_MAX_SIZE:-100M}"
+PHP_MEMORY_LIMIT="${PHP_MEMORY_LIMIT:-256M}"
+
+echo "Configuring PHP: upload_max_filesize=$PHP_UPLOAD_MAX_FILESIZE, post_max_size=$PHP_POST_MAX_SIZE, memory_limit=$PHP_MEMORY_LIMIT"
+for ini in /etc/php/8.1/apache2/conf.d/99-boca-limits.ini /etc/php/8.1/cli/conf.d/99-boca-limits.ini; do
+    if [ -f "$ini" ]; then
+        echo "upload_max_filesize = $PHP_UPLOAD_MAX_FILESIZE" > "$ini"
+        echo "post_max_size = $PHP_POST_MAX_SIZE" >> "$ini"
+        echo "memory_limit = $PHP_MEMORY_LIMIT" >> "$ini"
+    fi
+done
+
 until PGPASSWORD=$BOCA_DB_SUPER_PASSWORD \
   psql -h "$BOCA_DB_HOST" -U "$BOCA_DB_SUPER_USER" -c '\q';
 do
